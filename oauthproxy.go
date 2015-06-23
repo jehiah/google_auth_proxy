@@ -239,7 +239,7 @@ func (p *OauthProxy) ProcessCookie(rw http.ResponseWriter, req *http.Request) (e
 	if err != nil {
 		log.Printf(err.Error())
 		ok = false
-	} else if ok && p.CookieRefresh != time.Duration(0) && value != "" {
+	} else if ok && p.CookieRefresh != time.Duration(0) {
 		refresh := timestamp.Add(p.CookieRefresh)
 		if refresh.Before(time.Now()) {
 			ok = p.Validator(email) && p.provider.ValidateToken(access_token)

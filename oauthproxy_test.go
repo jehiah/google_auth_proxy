@@ -457,6 +457,37 @@ func TestProcessCookieRefreshThresholdNotCrossed(t *testing.T) {
 	assert.Equal(t, []string(nil), pc_test.rw.HeaderMap["Set-Cookie"])
 }
 
+func TestProcessCookieFailIfCookieExpired(t *testing.T) {
+	pc_test := NewProcessCookieTestWithDefaults()
+	pc_test.proxy.CookieExpire = time.Duration(24) * time.Hour
+	reference := time.Now().Add(time.Duration(25) * time.Hour * -1)
+	cookie := pc_test.MakeCookie("michael.bland@gsa.gov", "my_access_token", reference)
+	pc_test.req.AddCookie(cookie)
+
+	if _, _, _, ok := pc_test.ProcessCookie(); ok {
+		t.Error("ProcessCookie() should have failed")
+	}
+	if set_cookie := pc_test.rw.HeaderMap["Set-Cookie"]; set_cookie != nil {
+		t.Error("expected Set-Cookie to be nil, instead was: ", set_cookie)
+	}
+}
+
+func TestProcessCookieFailIfRefreshSetAndCookieExpired(t *testing.T) {
+	pc_test := NewProcessCookieTestWithDefaults()
+	pc_test.proxy.CookieExpire = time.Duration(24) * time.Hour
+	reference := time.Now().Add(time.Duration(25) * time.Hour * -1)
+	cookie := pc_test.MakeCookie("michael.bland@gsa.gov", "my_access_token", reference)
+	pc_test.req.AddCookie(cookie)
+
+	pc_test.proxy.CookieRefresh = time.Hour
+	if _, _, _, ok := pc_test.ProcessCookie(); ok {
+		t.Error("ProcessCookie() should have failed")
+	}
+	if set_cookie := pc_test.rw.HeaderMap["Set-Cookie"]; set_cookie != nil {
+		t.Error("expected Set-Cookie to be nil, instead was: ", set_cookie)
+	}
+}
+
 func TestProcessCookieFailIfRefreshSetAndTokenNoLongerValid(t *testing.T) {
 	pc_test := NewProcessCookieTest(ProcessCookieTestOpts{
 		provider_validate_cookie_response: false,

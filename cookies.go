@@ -27,6 +27,10 @@ func validateCookie(cookie *http.Cookie, seed string, expiration time.Duration) 
 		if err != nil {
 			return
 		}
+		// The expiration timestamp set when the cookie was created
+		// isn't sent back by the browser. Hence, we check whether the
+		// creation timestamp stored in the cookie falls within the
+		// window defined by (Now()-expiration, Now()].
 		t = time.Unix(int64(ts), 0)
 		if t.After(time.Now().Add(expiration*-1)) && t.Before(time.Now().Add(time.Minute*5)) {
 			// it's a valid cookie. now get the contents
