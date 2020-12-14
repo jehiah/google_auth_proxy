@@ -5,7 +5,6 @@ set -e
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "working dir $DIR"
 mkdir -p $DIR/dist
-dep ensure || exit 1
 
 os=$(go env GOOS)
 arch=$(go env GOARCH)
