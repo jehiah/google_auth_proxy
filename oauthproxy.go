@@ -485,6 +485,7 @@ func (p *OAuthProxy) SignIn(rw http.ResponseWriter, req *http.Request) {
 		p.ErrorPage(rw, 500, "Internal Error", err.Error())
 		return
 	}
+	rw.Header().Set("X-Frame-Options", "DENY")
 
 	user, ok := p.ManualSignIn(rw, req)
 	if ok {
@@ -502,10 +503,12 @@ func (p *OAuthProxy) SignIn(rw http.ResponseWriter, req *http.Request) {
 
 func (p *OAuthProxy) SignOut(rw http.ResponseWriter, req *http.Request) {
 	p.ClearSessionCookie(rw, req)
+	rw.Header().Set("X-Frame-Options", "DENY")
 	http.Redirect(rw, req, "/", 302)
 }
 
 func (p *OAuthProxy) OAuthStart(rw http.ResponseWriter, req *http.Request) {
+	rw.Header().Set("X-Frame-Options", "DENY")
 	nonce, err := cookie.Nonce()
 	if err != nil {
 		p.ErrorPage(rw, 500, "Internal Error", err.Error())
@@ -522,6 +525,7 @@ func (p *OAuthProxy) OAuthStart(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (p *OAuthProxy) OAuthCallback(rw http.ResponseWriter, req *http.Request) {
+	rw.Header().Set("X-Frame-Options", "DENY")
 	remoteAddr := getRemoteAddr(req)
 
 	// finish the oauth cycle
@@ -583,6 +587,7 @@ func (p *OAuthProxy) OAuthCallback(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (p *OAuthProxy) AuthenticateOnly(rw http.ResponseWriter, req *http.Request) {
+	rw.Header().Set("X-Frame-Options", "DENY")
 	status := p.Authenticate(rw, req)
 	if status == http.StatusAccepted {
 		rw.WriteHeader(http.StatusAccepted)
